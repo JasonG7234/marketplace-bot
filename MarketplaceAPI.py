@@ -3,13 +3,8 @@ import MarketplaceScraper
 
 API = Flask(__name__)
 
-
-@API.route("/locations", methods=["GET"])
-def locations():
+def locations(locationQuery):
     response = {}
-
-    # Required parameters provided by the user
-    locationQuery = request.args.get("locationQuery")
 
     if (locationQuery):
         status, error, data = MarketplaceScraper.getLocations(
@@ -26,15 +21,8 @@ def locations():
 
     return response
 
-
-@API.route("/search", methods=["GET"])
-def search():
+def search(locationLatitude, locationLongitude, listingQuery):
     response = {}
-
-    # Required parameters provided by user
-    locationLatitude = request.args.get("locationLatitude")
-    locationLongitude = request.args.get("locationLongitude")
-    listingQuery = request.args.get("listingQuery")
 
     if (locationLatitude and locationLongitude and listingQuery):
         status, error, data = MarketplaceScraper.getListings(
@@ -50,3 +38,10 @@ def search():
     response["data"] = data
 
     return response
+
+yuh = search("40.4016", "-74.3063", "free")
+listings = yuh["data"]["listingPages"][0]["listings"]
+for listing in listings:
+    print(listing)
+    print("============================================")
+# print(locations("Old Bridge, New Jersey"))

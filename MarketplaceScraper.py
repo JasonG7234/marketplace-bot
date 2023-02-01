@@ -1,13 +1,13 @@
 import requests
 import json
 import copy
+import time
 
 GRAPHQL_URL = "https://www.facebook.com/api/graphql/"
 GRAPHQL_HEADERS = {
     "sec-fetch-site": "same-origin",
     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 }
-
 
 def getLocations(locationQuery):
     data = {}
@@ -17,11 +17,10 @@ def getLocations(locationQuery):
         "doc_id": "5585904654783609"
     }
 
-    status, error, facebookResponse = getFacebookResponse(requestPayload)
+    status, error, facebookResponseJSON = getFacebookResponse(requestPayload)
 
     if (status == "Success"):
         data["locations"] = []  # Create a locations object within data
-        facebookResponseJSON = json.loads(facebookResponse.text)
 
         # Get location names and their ID from the facebook response
         for location in facebookResponseJSON["data"]["city_street_search"]["street_results"]["edges"]:
@@ -57,16 +56,15 @@ def getListings(locationLatitude, locationLongitude, listingQuery, numPageResult
     status, error, facebookResponse = getFacebookResponse(requestPayload)
 
     if (status == "Success"):
-        facebookResponseJSON = json.loads(facebookResponse.text)
-        rawPageResults.append(facebookResponseJSON)
+        rawPageResults.append(facebookResponse)
 
         # Retrieve subsequent page results if numPageResults > 1
         for _ in range(1, numPageResults):
-            pageInfo = facebookResponseJSON["data"]["marketplace_search"]["feed_units"]["page_info"]
+            pageInfo = facebookResponse["data"]["marketplace_search"]["feed_units"]["page_info"]
 
             # If a next page of results exists
             if (pageInfo["has_next_page"]):
-                cursor = facebookResponseJSON["data"]["marketplace_search"]["feed_units"]["page_info"]["end_cursor"]
+                cursor = facebookResponse["data"]["marketplace_search"]["feed_units"]["page_info"]["end_cursor"]
 
                 # Make a copy of the original request payload
                 requestPayloadCopy = copy.copy(requestPayload)
@@ -83,8 +81,8 @@ def getListings(locationLatitude, locationLongitude, listingQuery, numPageResult
                     requestPayloadCopy)
 
                 if (status == "Success"):
-                    facebookResponseJSON = json.loads(facebookResponse.text)
-                    rawPageResults.append(facebookResponseJSON)
+                    facebookResponse = json.loads(facebookResponse.text)
+                    rawPageResults.append(facebookResponse)
                 else:
                     return (status, error, data)
     else:
@@ -94,6 +92,44 @@ def getListings(locationLatitude, locationLongitude, listingQuery, numPageResult
     data["listingPages"] = parsePageResults(rawPageResults)
     return (status, error, data)
 
+def get_listing_description(id):
+    variables = {
+        'targetId': id,
+        'UFI2CommentsProvider_commentsKey': 'MarketplacePDP',
+        'canViewCustomizedProfile': 'true',
+        'feedbackSource': '56',
+        'feedLocation': 'MARKETPLACE_MEGAMALL',
+        'location_vanity_page_id': '107286902636860',
+        'pdpContext_isHoisted': 'false',
+        'pdpContext_trackingData': 'browse_serp:ab93c14a-095b-445c-850f-89e2566c9a3d',
+        'referralCode': 'null',
+        'relay_flight_marketplace_enabled': 'false',
+        'removeDeprecatedCommunityRecommended': 'true',
+        'scale': '2',
+        'should_show_new_pdp': 'false',
+        'useDefaultActor': 'false' }
+    requestPayload = {
+        'variables': str(json.dumps(variables)),
+        'doc_id': '5516791808425679'
+    }
+    
+    '''{"UFI2CommentsProvider_commentsKey":"MarketplacePDP","canViewCustomizedProfile":true,"feedbackSource":56,"feedLocation":"MARKETPLACE_MEGAMALL","imageContext":"mp_comet_webp","location_latitude":40.4016,"location_longitude":-74.3063,"location_radius":16,"location_vanity_page_id":"108675425831191","pdpContext_isHoisted":false,"pdpContext_trackingData":"browse_serp:9738f95a-5679-4285-8509-694275bdd81a","referralCode":"null","relay_flight_marketplace_enabled":false,"scale":1.5,"should_show_new_pdp":false,"targetId":"539507251483653","useDefaultActor":false,"__relay_internal__pv__StoriesRingrelayprovider":false}'''
+    
+    status, error, facebookResponse = getFacebookResponse(requestPayload)
+    return facebookResponse['data']['viewer']['marketplace_product_details_page']['target']['redacted_description']['text']
+    
+def find_site(requestPayload, max_retry_count=3):
+    count = 0
+    while count < max_retry_count:
+        try:
+            facebookResponse = requests.post(
+                GRAPHQL_URL, headers=GRAPHQL_HEADERS, data=requestPayload, timeout=15)
+            return facebookResponse
+        except requests.exceptions.RequestException:
+            print("Request error, giving it 10 and retrying")
+            time.sleep(10)
+            count += 1
+    return None
 
 # Helper function
 def getFacebookResponse(requestPayload):
@@ -101,23 +137,11 @@ def getFacebookResponse(requestPayload):
     error = {}
 
     # Try making post request to Facebook, excpet return
-    try:
-        facebookResponse = requests.post(
-            GRAPHQL_URL, headers=GRAPHQL_HEADERS, data=requestPayload)
-    except requests.exceptions.RequestException as requestError:
-        status = "Failure"
-        error["source"] = "Request"
-        error["message"] = str(requestError)
-        facebookResponse = None
-        return (status, error, facebookResponse)
-
+    facebookResponse = find_site(requestPayload)
     if (facebookResponse.status_code == 200):
-        facebookResponseJSON = json.loads(facebookResponse.text)
-
-        if (facebookResponseJSON.get("errors")):
-            status = "Failure"
-            error["source"] = "Facebook"
-            error["message"] = facebookResponseJSON["errors"][0]["message"]
+        responseText = facebookResponse.text
+        facebookResponseJSON = json.loads(responseText)
+        return ("Success", error, facebookResponseJSON)
     else:
         status = "Failure"
         error["source"] = "Facebook"
@@ -132,42 +156,42 @@ def parsePageResults(rawPageResults):
     listingPages = []
 
     pageIndex = 0
+    
     for rawPageResult in rawPageResults:
 
         # Create a new listings object within the listingPages array
-        listingPages.append({"listings": []})
+        listingPages.append({'listings': []})
 
-        for listing in rawPageResult["data"]["marketplace_search"]["feed_units"]["edges"]:
+        for listing in rawPageResult['data']['marketplace_search']['feed_units']['edges']:
 
             # If object is a listing
-            if (listing["node"]["__typename"] == "MarketplaceFeedListingStoryObject"):
-                listingID = listing["node"]["listing"]["id"]
-                listingName = listing["node"]["listing"]["marketplace_listing_title"]
-                listingCurrentPrice = listing["node"]["listing"]["listing_price"]["formatted_amount"]
+            if (listing['node']['__typename'] == 'MarketplaceFeedListingStoryObject'):
+                print(json.dumps(listing, indent=4))
+                listingID = listing['node']['listing']['id']
+                listingName = listing['node']['listing']['marketplace_listing_title']
+                listingCurrentPrice = listing['node']['listing']['listing_price']['formatted_amount']
 
                 # If listing has a previous price
-                if (listing["node"]["listing"]["strikethrough_price"]):
-                    listingPreviousPrice = listing["node"]["listing"]["strikethrough_price"]["formatted_amount"]
+                if (listing['node']['listing']['strikethrough_price']):
+                    listingPreviousPrice = listing['node']['listing']['strikethrough_price']['formatted_amount']
                 else:
-                    listingPreviousPrice = ""
+                    listingPreviousPrice = ''
 
-                listingSaleIsPending = listing["node"]["listing"]["is_pending"]
-                listingPrimaryPhotoURL = listing["node"]["listing"]["primary_listing_photo"]["image"]["uri"]
-                sellerName = listing["node"]["listing"]["marketplace_listing_seller"]["name"]
-                sellerLocation = listing["node"]["listing"]["location"]["reverse_geocode"]["city_page"]["display_name"]
-                sellerType = listing["node"]["listing"]["marketplace_listing_seller"]["__typename"]
+                listingSaleIsPending = listing['node']['listing']['is_pending']
+                listingPrimaryPhotoURL = listing['node']['listing']['primary_listing_photo']['image']['uri']
+                sellerName = listing['node']['listing']['marketplace_listing_seller']['name']
+                sellerLocation = listing['node']['listing']['location']['reverse_geocode']['city_page']['display_name']
 
                 # Add the listing to its corresponding page
-                listingPages[pageIndex]["listings"].append({
-                    "id": listingID,
-                    "name": listingName,
-                    "currentPrice": listingCurrentPrice,
-                    "previousPrice": listingPreviousPrice,
-                    "saleIsPending": str(listingSaleIsPending).lower(),
-                    "primaryPhotoURL": listingPrimaryPhotoURL,
-                    "sellerName": sellerName,
-                    "sellerLocation": sellerLocation,
-                    "sellerType": sellerType
+                listingPages[pageIndex]['listings'].append({
+                    'title': listingName,
+                    'description': get_listing_description(listingID),
+                    'currentPrice': listingCurrentPrice,
+                    'previousPrice': listingPreviousPrice,
+                    'saleIsPending': str(listingSaleIsPending).lower(),
+                    'primaryPhotoURL': listingPrimaryPhotoURL,
+                    'sellerName': sellerName,
+                    'sellerLocation': sellerLocation
                 })
 
         pageIndex += 1
