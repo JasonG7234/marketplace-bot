@@ -5,6 +5,10 @@ from .MarketplaceSearchResponse import MarketplaceSearchResponse
 
 class Marketplace: 
     
+    def __init__(self, latitude: str, longitude: str):
+        self.latitude = latitude
+        self.longitude = longitude
+    
     def get_locations(self, location_query: str) -> MarketplaceLocationResponse:
         '''
         Gets the Facebook location data associated with a location, passed in as a string
@@ -27,7 +31,7 @@ class Marketplace:
         response = utils.post_request(payload)
         return MarketplaceLocationResponse(response)
         
-    def get_listings(self, latitude: str, longitude: str, search_query: str) -> MarketplaceSearchResponse:
+    def get_listings(self, search_query: str, debug_mode=False,) -> MarketplaceSearchResponse:
         '''
         Gets the Facebook listings for a given location and search query.
         NOTE: For each listing, this makes a call to the listing details API to retrieve timestamp and description. 
@@ -42,14 +46,28 @@ class Marketplace:
         MarketplaceSearchResponse: Class that has a function `get_listings` that returns a list of listings 
             (dictionary of updatedTimeStamp, title, description, currentPrice, previousPrice, saleIsPending, primaryPhotoURL, sellerName, sellerLocation)
         '''
-        print("Getting listings for query " + search_query)
+        if (debug_mode):
+            print("Getting listings for query " + search_query)
+        
+        VARIABLES = {
+            "commerce_enable_local_pickup": 'true',
+            "commerce_enable_shipping": 'true',
+            "commerce_search_and_rp_available": 'true',
+            "commerce_search_and_rp_condition": 'null',
+            "commerce_search_and_rp_ctime_days": 'null',
+            "filter_location_latitude": self.latitude,
+            "filter_location_longitude": self.longitude,
+            "filter_price_lower_bound": 0,
+            "filter_price_upper_bound": 250,
+            "filter_radius_km": 16
+        }
         DOC_ID = "7111939778879383" # Honestly have no idea what these do, don't ask
         
         payload = {
-            "variables": """{"count":24, "params":{"bqf":{"callsite":"COMMERCE_MKTPLACE_WWW","query":"%s"},"browse_request_params":{"commerce_enable_local_pickup":true,"commerce_enable_shipping":true,"commerce_search_and_rp_available":true,"commerce_search_and_rp_condition":null,"commerce_search_and_rp_ctime_days":null,"filter_location_latitude":%s,"filter_location_longitude":%s,"filter_price_lower_bound":0,"filter_price_upper_bound":214748364700,"filter_radius_km":16},"custom_request_params":{"surface":"SEARCH"}}}""" % (search_query, latitude, longitude),
+            "variables": """{"count":24, "params":{"bqf":{"callsite":"COMMERCE_MKTPLACE_WWW","query":"%s"},"browse_request_params":%s,"custom_request_params":{"surface":"SEARCH"}}}""" % (search_query, VARIABLES),
             "doc_id": DOC_ID
         }
         
         response = utils.post_request(payload)
-        return MarketplaceSearchResponse(response, search_query).get_listings()
+        return MarketplaceSearchResponse(response, search_query, debug_mode).get_listings()
         

@@ -5,7 +5,7 @@ from src import utils
 
 class MarketplaceSearchResponse:
     
-    def __init__(self, response, query):
+    def __init__(self, response, query, debug_mode=False):
         self.query = query
         if (response.status_code != 200):
             raise ValueError(response.text)
@@ -16,7 +16,7 @@ class MarketplaceSearchResponse:
         except ValueError as e:
             raise ValueError(e)
     
-    def create_listings(self, response):
+    def create_listings(self, response, debug_mode=False):
         self.listings = []
         try:
             data = response['data']['marketplace_search']['feed_units']['edges']
@@ -42,6 +42,8 @@ class MarketplaceSearchResponse:
                 seller_name = node['listing']['marketplace_listing_seller']['name']
                 seller_location = node['listing']['location']['reverse_geocode']['city_page']['display_name']
                 
+                if (debug_mode):
+                    print("Getting listing details for listing id " + listing_id)
                 listing_details = self.get_listing_details(listing_id)
                 
                 listing = {
