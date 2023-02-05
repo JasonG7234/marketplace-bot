@@ -14,3 +14,8 @@ Date listed: Last 24 hours -> commerce_search_and_rp_ctime_days (string: "19062;
 
 Availability: Available -> commerce_search_and_rp_available (boolean: true)
 Availability: Sold -> commerce_search_and_rp_available (boolean: false)
+
+Category ID: commerce_search_and_rp_category_id (array: (string: ???))
+             commerce_search_and_rp_fb_product_category_id
+             
+Sort by: commerce_search_sort_by (string: null or "CREATION_TIME_DESCEND;DISTANCE_ASCEND;BEST_MATCH;PRICE_DESCEND;PRICE_ASCEND")
