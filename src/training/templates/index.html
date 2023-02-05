@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Which listing is better? </title>
+    </head>
+    <body style="font-family: verdana">
+        <div style="width: 100%; height: 100%; border: 3px solid blue;">
+            <form method="post" action="/">
+            <div style="width: 50%; float: left; height: 95%; text-align: center;">
+                <h1>ITEM 1</h1>
+                <h2 class="green">{{ o1['title'] }}</h2>
+                <img src="{{o1['primaryPhotoURL']}}"/>
+                <p><b>Description:</b> {{ o1['description'] }}</p>
+                <p><b>Price:</b> {{ o1['currentPrice'] }}</p>
+                <p><b>Condition:</b> {{ o1['condition'] }}</p>
+                
+                <input type="submit" value="Item 1 is better!" name="action1"/>
+            </div>
+            
+            <div style="width: 50%; float: right; height: 95%; text-align: center;">
+                <h1>ITEM 2</h1>
+                <h2 class="green">{{ o2['title'] }}</h2>
+                <img src="{{o2['primaryPhotoURL']}}"/>
+                <p><b>Description:</b> {{ o2['description'] }}</p>
+                <p><b>Price:</b> {{ o2['currentPrice'] }}</p>
+                <p><b>Condition:</b> {{ o2['condition'] }}</p>
+                
+                <input type="submit" value="Item 2 is better!" name="action2"/>
+            </div>
+            <div style="text-align: center">
+            <input type="submit" value="End" name="End"/>
+            </div>
+            </form>
+          </div>
+    </body>
+</html>

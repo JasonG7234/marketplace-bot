@@ -1,12 +1,18 @@
 import requests
 import time
 
-def post_request(url, headers, payload, max_retry_count=3):
+API_URL = "https://www.facebook.com/api/graphql/"
+HEADERS = {
+    "sec-fetch-site": "same-origin",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+}
+
+def post_request(payload, url=API_URL, headers=HEADERS, max_retry_count=3):
     count = 0
     while count < max_retry_count:
         try:
             response = requests.post(
-                url, headers, data=payload, timeout=15)
+                url, headers=headers, data=payload, timeout=15)
             return response
         except requests.exceptions.RequestException:
             print("Request error, giving it 10 and retrying")

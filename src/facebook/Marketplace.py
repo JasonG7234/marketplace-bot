@@ -1,68 +1,10 @@
-import json
-
-class MarketplaceLocationResponse:
-    
-    def __init__(self, response):
-        if (response.status_code != 200):
-            raise ValueError(response.text)
-        try:
-            response_json = json.loads(response.text)
-            self.create_locations(response_json)
-        except ValueError as e:
-            raise ValueError(e.message)
-        
-    def create_locations(self, response):
-        self.locations = []
-        try:
-            data = response["data"]["city_street_search"]["street_results"]["edges"]
-        except KeyError as ke:
-            raise ValueError("ERROR: Invalid response from get_locations. Please try again with a different location string.", ke)
-        for node in data:
-            
-            location_name = node["subtitle"].split(" \u00b7")[0]
-
-            # Refine location name if it is too general
-            if (location_name == "City"):
-                location_name = node["single_line_address"]
-
-            location_latitude = node["location"]["latitude"]
-            location_longitude = node["location"]["longitude"]
-            
-            self.locations.append({
-                "name": location_name,
-                "latitude": str(location_latitude),
-                "longitude": str(location_longitude)
-            })
-            
-    def get_locations(self):
-        return self.locations
-    
-class MarketplaceSearchResponse:
-    
-    def __init__(self, response):
-        if (response.status_code != 200):
-            raise ValueError(response.text)
-        try:
-            response_json = json.loads(response.text)
-            self.create_listings(response_json)
-        except ValueError as e:
-            raise ValueError(e.message)
-    
-    def create_listings(self, response):
-        return response
-        
-    def get_listings(self):
-        return self.listings
-
 from src import utils
+
+from .MarketplaceLocationResponse import MarketplaceLocationResponse
+from .MarketplaceSearchResponse import MarketplaceSearchResponse 
 
 class Marketplace: 
     
-    API_URL = "https://www.facebook.com/api/graphql/"
-    HEADERS = {
-    "sec-fetch-site": "same-origin",
-    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
-}
     def get_locations(self, location_query: str) -> MarketplaceLocationResponse:
         '''
         Gets the Facebook location data associated with a location, passed in as a string
@@ -81,13 +23,15 @@ class Marketplace:
             "variables": """{"params": {"caller": "MARKETPLACE", "page_category": ["CITY", "SUBCITY", "NEIGHBORHOOD","POSTAL_CODE"], "query": "%s"}}""" % (location_query),
             "doc_id": DOC_ID
         }
-        
-        response = utils.post_request(self.API_URL, self.HEADERS, payload)
+        print(payload)
+        response = utils.post_request(payload)
         return MarketplaceLocationResponse(response)
         
     def get_listings(self, latitude: str, longitude: str, search_query: str) -> MarketplaceSearchResponse:
         '''
         Gets the Facebook listings for a given location and search query.
+        NOTE: For each listing, this makes a call to the listing details API to retrieve timestamp and description. 
+        Therefore, this call will take much longer than get_locations().
 
         Parameters:
         latitude (string): Any latitude
@@ -98,7 +42,7 @@ class Marketplace:
         MarketplaceSearchResponse: Class that has a function `get_listings` that returns a list of listings 
             (dictionary of updatedTimeStamp, title, description, currentPrice, previousPrice, saleIsPending, primaryPhotoURL, sellerName, sellerLocation)
         '''
-        
+        print("Getting listings for query " + search_query)
         DOC_ID = "7111939778879383" # Honestly have no idea what these do, don't ask
         
         payload = {
@@ -106,6 +50,6 @@ class Marketplace:
             "doc_id": DOC_ID
         }
         
-        response = utils.post_request(self.API_URL, self.HEADERS, payload)
-        return MarketplaceSearchResponse(response)
+        response = utils.post_request(payload)
+        return MarketplaceSearchResponse(response, search_query).get_listings()
         
