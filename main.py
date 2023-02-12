@@ -1,48 +1,90 @@
+from datetime import datetime
+import json
 import sys
 sys.path.append("./src")
 
 from facebook.Marketplace import *
-
-import json
+from gmail import gmail
 
 LATITUDE = "40.4016"
 LONGITUDE = "-74.3063"
+NOW = datetime.now()
+CATEGORIES = ["bicycle", "rug", "couch", "basketball", "furniture", "free", "table",
+              "video games", "computer", "plants", "tv", "electronics", "technology",
+              "men", "homegoods"]
 
-facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
-listings = []
+def score_listings(listings):
+        
+    for listing in listings: 
+        listing['score'] = 0
+        
+        # Cheap
+        price = int(listing['currentPrice'][1:].replace(',', ''))
+        listing['score'] += (250 - price)/25
 
-listings.extend(facebook_marketplace.get_listings("bicycle", debug_mode=True))
-listings.extend(facebook_marketplace.get_listings("rug"))
-listings.extend(facebook_marketplace.get_listings("couch"))
-listings.extend(facebook_marketplace.get_listings("basketball"))
-listings.extend(facebook_marketplace.get_listings("furniture"))
-listings.extend(facebook_marketplace.get_listings("free"))
-listings.extend(facebook_marketplace.get_listings("table"))
-listings.extend(facebook_marketplace.get_listings("video games"))
-listings.extend(facebook_marketplace.get_listings("computer"))
-listings.extend(facebook_marketplace.get_listings("plants"))
-listings.extend(facebook_marketplace.get_listings("tv"))
-listings.extend(facebook_marketplace.get_listings("electronics"))
-listings.extend(facebook_marketplace.get_listings("technology"))
-listings.extend(facebook_marketplace.get_listings("men"))
-listings.extend(facebook_marketplace.get_listings("homegoods"))
+        # Recent
+        if (isinstance(listing['timestamp'], datetime.datetime)):
+            timestamp = listing['timestamp']
+        else:
+            timestamp = datetime.strptime(listing['timestamp'], "%Y-%m-%d %H:%M:%S")
+        delta = NOW - timestamp
+        hours_since_post = delta.days * 24 + delta.seconds/3600
+        listing['score'] += 10 - (hours_since_post/24)
+        
+        # Score differently for different categories
+        category_dict = {
+            "furniture" : 15,
+            "rug" : 10,
+            "couch" : 8,
+            "table" : 8,
+            "homegoods" : 6,
+            "tv" : 5,
+            "bicycle" : 5,
+            "free" : -2,
+            "plants" : -1
+        }
+        
+        listing['score'] += category_dict.get(listing['category'], 0)
+        
+        # Good quality
+        condition_dict = {
+            "New" : 5,
+            "Used - like new" : 3,
+            "Used - fair" : -3
+        }
+        
+        listing['score'] += condition_dict.get(listing['condition'], 0)
 
-# FOR THE ALGORITHM - IN ORDER...
-# Prioritze FREE over PAID, scaling for the amount of money
-# Prioritize RECENT POSTINGS, scaling for the recency of the post
-# Prioritize CATEGORY
-    # Delete entries if they've been shown to me before
-# Prioritize good condition, scaling
-# Prioritize proximity
+    listings.sort(reverse=True, key=lambda x: x['score'])
+    return listings
 
-with open("sample.json", "w") as outfile:
-    outfile.write('{"listings":[')
-    for listing in listings:
-        test = listing
-        test['positiveVotes'] = 0
-        test['negativeVotes'] = 0
-        outfile.write(json.dumps(test, indent=4, default=str))
-        outfile.write(',')
-    outfile.write(']}')
-
+def populate_listings(facebook_marketplace, output=True):
+    listings = []
     
+    for category in CATEGORIES:
+        listings.extend(facebook_marketplace.get_listings(category))
+        
+    if output:
+        with open("sample.json", "w") as outfile:
+            outfile.write('{"listings":[')
+            for listing in listings:
+                test = listing
+                test['positiveVotes'] = 0
+                test['negativeVotes'] = 0
+                outfile.write(json.dumps(test, indent=4, default=str))
+                outfile.write(',')
+            outfile.write(']}')
+    
+    return listings
+
+if __name__ == "__main__":
+    
+    # STEP 1 - Get listings
+    facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
+    listings = populate_listings(facebook_marketplace)
+    
+    # STEP 2 - Score all listings
+    listings = score_listings(listings)
+    
+    # STEP 3 - Send email of top 10 listings
+    gmail.send_email(listings[:10])
