@@ -16,7 +16,11 @@ class MarketplaceListingResponse:
         
     def create_listing_details(self, response):
         
-        self.description = response['data']['viewer']['marketplace_product_details_page']['target']['redacted_description']['text']
+        try:
+            self.description = response['data']['viewer']['marketplace_product_details_page']['target']['redacted_description']['text']
+        except KeyError as ke:
+            print(ke)
+            print(response)
         epoch_timestamp = response['data']['viewer']['marketplace_product_details_page']['target']['creation_time']
         self.timestamp = datetime.fromtimestamp(epoch_timestamp)
         details = response['data']['viewer']['marketplace_product_details_page']['target']

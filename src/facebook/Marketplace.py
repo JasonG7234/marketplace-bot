@@ -27,7 +27,6 @@ class Marketplace:
             "variables": """{"params": {"caller": "MARKETPLACE", "page_category": ["CITY", "SUBCITY", "NEIGHBORHOOD","POSTAL_CODE"], "query": "%s"}}""" % (location_query),
             "doc_id": DOC_ID
         }
-        print(payload)
         response = utils.post_request(payload)
         return MarketplaceLocationResponse(response)
         
@@ -46,28 +45,44 @@ class Marketplace:
         MarketplaceSearchResponse: Class that has a function `get_listings` that returns a list of listings 
             (dictionary of updatedTimeStamp, title, description, currentPrice, previousPrice, saleIsPending, primaryPhotoURL, sellerName, sellerLocation)
         '''
+        
         if (debug_mode):
             print("Getting listings for query " + search_query)
-        
-        VARIABLES = {
-            "commerce_enable_local_pickup": 'true',
-            "commerce_enable_shipping": 'true',
-            "commerce_search_and_rp_available": 'true',
-            "commerce_search_and_rp_condition": 'null',
-            "commerce_search_and_rp_ctime_days": 'null',
-            "filter_location_latitude": self.latitude,
-            "filter_location_longitude": self.longitude,
-            "filter_price_lower_bound": 0,
-            "filter_price_upper_bound": 250,
-            "filter_radius_km": 16
-        }
+            
         DOC_ID = "7111939778879383" # Honestly have no idea what these do, don't ask
-        
+
         payload = {
-            "variables": """{"count":24, "params":{"bqf":{"callsite":"COMMERCE_MKTPLACE_WWW","query":"%s"},"browse_request_params":%s,"custom_request_params":{"surface":"SEARCH"}}}""" % (search_query, VARIABLES),
+            "variables": self.get_search_variables(search_query),
             "doc_id": DOC_ID
         }
-        
         response = utils.post_request(payload)
+        if (debug_mode):
+            print(response.text)
         return MarketplaceSearchResponse(response, search_query, debug_mode).get_listings()
-        
+    
+    def get_search_variables(self, query):
+            
+            return """{
+                "count" : 24,
+                "params" : {
+                    "bqf" : {
+                        "callsite" : "COMMERCE_MKTPLACE_WWW",
+                        "query" : "%s"
+                    },
+                    "browse_request_params" : {
+                        "commerce_enable_local_pickup" : true,
+                        "commerce_enable_shipping" : true,
+                        "commerce_search_and_rp_available" : true,
+                        "commerce_search_and_rp_condition" : null, 
+                        "commerce_search_and_rp_ctime_days" : null,
+                        "filter_location_latitude" : %s,
+                        "filter_location_longitude" : %s,
+                        "filter_price_lower_bound" : 0,
+                        "filter_price_upper_bound" : 250,
+                        "filter_radius_km":16
+                    },
+                    "custom_request_params" : {
+                        "surface" : "SEARCH"
+                    }
+                }
+            }""" % (query, self.latitude, self.longitude)
