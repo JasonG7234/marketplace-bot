@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <style>
+        @font-face {
+            font-family: 'klavika';
+            src: url('fonts/klavika-medium.eot');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            background-color: #E4E6EB;
+            font-family:'klavika',Sans-Serif;
+        }
+        .header {
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+        }
+        .header-text {
+            color: #4267B2;
+            font-size: 50px;
+            padding-left: 15px;
+        }
+        .listing {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .listing-image {
+            width: 200px;
+            height: 200px;
+            margin-right: 20px;
+        }
+        .listing-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .listing-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .listing-description {
+            font-size: 16px;
+            color: gray;
+            margin-bottom: 10px;
+        }
+        .listing-date {
+            font-size: 14px;
+            color: gray;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/600px-Facebook_Logo_%282019%29.png" height="100px" alt="Facebook Logo" />
+        <h1 class="header-text">Best Facebook Marketplace Listings</h1>
+    </div>
+    {% for listing in listings %}
+      <div class="listing">
+        <img class="listing-image" src="{{listing.primaryPhotoURL}}" alt="Listing Image">
+        <div class="listing-info">
+            <a href="https://www.facebook.com/marketplace/item/{{listing.id}}">
+                <h2 class="listing-title">{{ listing.title }}</h2>
+            </a>
+            <div class="listing-description">{{ listing.description }}</div>
+            <div class="listing-date">{{ listing.timestamp }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </body>
+</html>
