@@ -166,4 +166,4 @@ cython_debug/
 #################################
 # SPECIFICS FOR THIS PROJECT
 #################################
-src/email/credentials.json
+src/gmail/credentials.json
