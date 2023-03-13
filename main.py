@@ -9,9 +9,7 @@ from gmail import gmail
 LATITUDE = "40.4016"
 LONGITUDE = "-74.3063"
 NOW = datetime.now()
-CATEGORIES = ["bicycle", "rug", "couch", "basketball", "furniture", "free", "table",
-              "video games", "computer", "plants", "tv", "electronics", "technology",
-              "men", "homegoods"]
+CATEGORIES = ["bicycle", "rug", "couch", "furniture", "free", "table", "computer", "tv", "homegoods"]
 
 def score_listings(listings):
         
@@ -58,11 +56,8 @@ def score_listings(listings):
     listings.sort(reverse=True, key=lambda x: x['score'])
     return listings
 
-def populate_listings(facebook_marketplace, output=True):
-    listings = []
+def populate_listings(listings, output=True):
     
-    for category in CATEGORIES:
-        listings.extend(facebook_marketplace.get_listings(category))
         
     if output:
         with open("sample.json", "w") as outfile:
@@ -81,10 +76,14 @@ if __name__ == "__main__":
     
     # STEP 1 - Get listings
     facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
-    listings = populate_listings(facebook_marketplace)
+    listings = []
+    
+    for category in CATEGORIES:
+        listings.extend(facebook_marketplace.get_listings(category))
     
     # STEP 2 - Score all listings
     listings = score_listings(listings)
+    listings = populate_listings(listings)
     
     # STEP 3 - Send email of top 10 listings
     gmail.send_email(listings[:10])

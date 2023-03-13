@@ -6,8 +6,9 @@ from googleapiclient.discovery import build
 from requests import HTTPError
 
 FLOW = InstalledAppFlow.from_client_secrets_file(
-            'src/gmail/credentials.json', [ "https://www.googleapis.com/auth/gmail.send" ])
-creds = FLOW.run_local_server(port=8081)
+            'src/gmail/credentials.json', 
+            [ "https://www.googleapis.com/auth/gmail.send" ])
+creds = FLOW.run_console()
 
 def send_email(listings):
     service = build('gmail', 'v1', credentials=creds)
