@@ -167,3 +167,4 @@ cython_debug/
 # SPECIFICS FOR THIS PROJECT
 #################################
 src/gmail/credentials.json
+src/gmail/app_password.json
