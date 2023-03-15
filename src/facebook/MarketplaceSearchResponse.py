@@ -71,7 +71,6 @@ class MarketplaceSearchResponse:
             'canViewCustomizedProfile': 'true',
             'feedbackSource': '56',
             'feedLocation': 'MARKETPLACE_MEGAMALL',
-            'location_vanity_page_id': '107286902636860',
             'pdpContext_isHoisted': 'false',
             'pdpContext_trackingData': 'browse_serp:ab93c14a-095b-445c-850f-89e2566c9a3d',
             'referralCode': 'null',
