@@ -16,6 +16,9 @@
             justify-content: center;
             align-items: center;
         }
+        .facebook_logo {
+            height: 4em;
+        }
         .header-text {
             color: #4267B2;
             font-size: 50px;
@@ -27,45 +30,47 @@
             padding: 10px;
         }
         .listing-image {
-            width: 200px;
-            height: 200px;
-            margin-right: 20px;
+            width: 15em;
+            height: 15em;
+            margin-right: 1em;
         }
         .listing-info {
-            display: flex;
-            flex-direction: column;
         }
         .listing-title {
-            font-size: 32px;
+            font-size: 2em;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 0.5em;
         }
         .listing-description {
-            font-size: 16px;
+            font-size: 1em;
             color: gray;
-            margin-bottom: 10px;
+            margin-bottom: 0.5em;
         }
         .listing-date {
-            font-size: 14px;
+            font-size: 1em;
             color: gray;
+            margin-bottom: 0.5em;
         }
     </style>
   </head>
   <body>
     <div class="header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/600px-Facebook_Logo_%282019%29.png" height="100px" alt="Facebook Logo" />
+        <img class="facebook_logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/600px-Facebook_Logo_%282019%29.png" alt="Facebook Logo" />
         <h1 class="header-text">Best Facebook Marketplace Listings</h1>
     </div>
     {% for listing in listings %}
-      <div class="listing">
+    <div class="listing">
         <img class="listing-image" src="{{listing.primaryPhotoURL}}" alt="Listing Image">
-        <div class="listing-info">
-            <a href="https://www.facebook.com/marketplace/item/{{listing.id}}">
-                <h2 class="listing-title">{{ listing.title }}</h2>
-            </a>
-            <div class="listing-description">{{ listing.description }}</div>
-            <div class="listing-date">{{ listing.timestamp }}</div>
-        </div>
+        <table class="listing-info">
+            <tr><td>
+                <a href="https://www.facebook.com/marketplace/item/{{listing.id}}">
+                    <h2 class="listing-title">{{ listing.title }}</h2>
+                </a></td>
+            </tr>
+            <tr><td><div class="listing-description">{{ listing.description }}</div></td></tr>
+            <tr><td><div class="listing-date">{{ listing.timestamp }}</div></td></tr>
+            <tr><td><div class="listing-date">{{ listing.currentPrice }}</div></td></tr>
+        </table>
       </div>
     {% endfor %}
   </body>

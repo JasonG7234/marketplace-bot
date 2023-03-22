@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import sys
+import re
 sys.path.append("./src")
 
 from facebook.Marketplace import *
@@ -18,10 +19,16 @@ def score_listings(listings):
         
         # Cheap
         price = int(listing['currentPrice'][1:].replace(',', ''))
+        if (price == 0 and "$" in listing['description']):
+            price_list = re.findall(r'\$(\d+)', listing['description'])
+            if (len(price_list) != 0):
+                price_list_int = list(map(int, price_list))
+                price = sum(price_list_int) / len(price_list_int)
+                listing['price'] = price
         listing['score'] += (250 - price)/25
 
         # Recent
-        if (isinstance(listing['timestamp'], datetime.datetime)):
+        if (isinstance(listing['timestamp'], datetime)):
             timestamp = listing['timestamp']
         else:
             timestamp = datetime.strptime(listing['timestamp'], "%Y-%m-%d %H:%M:%S")
@@ -74,16 +81,27 @@ def populate_listings(listings, output=True):
 
 if __name__ == "__main__":
     
-    # STEP 1 - Get listings
-    facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
     listings = []
     
-    for category in CATEGORIES:
-        listings.extend(facebook_marketplace.get_listings(category))
+    # STEP 1 - Get listings
+    # facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
+
     
-    # STEP 2 - Score all listings
+    # for category in CATEGORIES:
+    #     print("Checking Facebook Marketplace listings for query: " + category)
+    #     listings.extend(facebook_marketplace.get_listings(category))
+        
+    # or ...
+    import json
+    f = open('sample.json')
+    data = json.load(f)
+    for item in data['listings']:
+        listings.append(item)
+    
+    #STEP 2 - Score all listings
+    
+    # listings = populate_listings(listings)
     listings = score_listings(listings)
-    listings = populate_listings(listings)
     
     # STEP 3 - Send email of top 10 listings
-    gmail.send_email(listings[:10])
+    gmail.send_email_old(listings[:10])
