@@ -57,22 +57,22 @@ def score_listings(listings):
             "Used - like new" : 3,
             "Used - fair" : -3
         }
-        
         listing['score'] += condition_dict.get(listing['condition'], 0)
+        
+        # Location
+        if ("New York" in listing['sellerLocation']):
+            listing['score'] -= 15
 
     listings.sort(reverse=True, key=lambda x: x['score'])
     return listings
 
 def populate_listings(listings, output=True):
     
-        
     if output:
         with open("sample.json", "w") as outfile:
             outfile.write('{"listings":[')
             for listing in listings:
                 test = listing
-                test['positiveVotes'] = 0
-                test['negativeVotes'] = 0
                 outfile.write(json.dumps(test, indent=4, default=str))
                 outfile.write(',')
             outfile.write(']}')
@@ -84,24 +84,23 @@ if __name__ == "__main__":
     listings = []
     
     # STEP 1 - Get listings
-    # facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
+    facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
 
     
-    # for category in CATEGORIES:
-    #     print("Checking Facebook Marketplace listings for query: " + category)
-    #     listings.extend(facebook_marketplace.get_listings(category))
+    for category in CATEGORIES:
+        print("Checking Facebook Marketplace listings for query: " + category)
+        listings.extend(facebook_marketplace.get_listings(category))
         
     # or ...
-    import json
-    f = open('sample.json')
-    data = json.load(f)
-    for item in data['listings']:
-        listings.append(item)
+    # import json
+    # f = open('sample.json')
+    # data = json.load(f)
+    # for item in data['listings']:
+    #     listings.append(item)
     
     #STEP 2 - Score all listings
-    
-    # listings = populate_listings(listings)
     listings = score_listings(listings)
+    listings = populate_listings(listings)
     
     # STEP 3 - Send email of top 10 listings
     gmail.send_email_old(listings[:10])

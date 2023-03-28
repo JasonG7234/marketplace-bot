@@ -49,11 +49,12 @@ class Marketplace:
         if (debug_mode):
             print("Getting listings for query " + search_query)
             
-        DOC_ID = "7111939778879383" # Honestly have no idea what these do, don't ask
+        DOC_ID = "5851968321514267" # Honestly have no idea what these do, don't ask
 
         payload = {
             "variables": self.get_search_variables(search_query),
-            "doc_id": DOC_ID
+            "doc_id": DOC_ID,
+            "__csr": "gaI-ynf4Hb7Hiv4Ofjlvi23i2ArWlQykG5H8ylkAzcwwBRlROnpG-GB-AZqijQGuVCycKiHKFbKFWHzlhFaAmvKpCHLiXGECipamVXCUKHigXG-GFy68V9AqVkU-KiqVpK4GUjBGcgixWeDBWyFUizUoyqzFUjzFVbxCrxK3GEa9U-axGbyUSq5rgW58pKiaAxifAKfGewhoKu257yoO442a9wMyUc8nz8bopwOzaxC2KE7u2C2jDwEwKU4y3m3y3CEnwXwBxe2a1OwwwgUy4Fk32220nC05jE16U08EU1fo0dIo4S00HuU0rqw7CK0ehx6m04BE0gFwho5a02lMwiwcKro3Ew9-04k83Uw0LAw4pIB0kU1lU0SR0fu0iZ07vx20hW0dMw27E8o18Ee8"
         }
         response = utils.post_request(payload)
         if (debug_mode):
@@ -71,18 +72,20 @@ class Marketplace:
                     },
                     "browse_request_params" : {
                         "commerce_enable_local_pickup" : true,
-                        "commerce_enable_shipping" : true,
+                        "commerce_enable_shipping" : false,
                         "commerce_search_and_rp_available" : true,
                         "commerce_search_and_rp_condition" : null, 
                         "commerce_search_and_rp_ctime_days" : null,
                         "filter_location_latitude" : %s,
                         "filter_location_longitude" : %s,
                         "filter_price_lower_bound" : 0,
-                        "filter_price_upper_bound" : 250,
-                        "filter_radius_km":16
+                        "filter_price_upper_bound" : 200,
+                        "filter_radius_km":12,
+                        "commerce_search_sort_by": "CREATION_TIME_DESCEND",
                     },
                     "custom_request_params" : {
-                        "surface" : "SEARCH"
+                        "surface" : "SEARCH",
+                        "search_vertical": "C2C"
                     }
                 }
             }""" % (query, self.latitude, self.longitude)
