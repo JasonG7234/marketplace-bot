@@ -4,6 +4,8 @@ import sys
 import re
 sys.path.append("./src")
 
+import cld3
+
 from facebook.Marketplace import *
 from gmail import gmail
 
@@ -17,8 +19,14 @@ def score_listings(listings):
     for listing in listings: 
         listing['score'] = 0
         
+        ### DISQUALIFIER ### 
+        # Not English
+        translation = cld3.get_language(listing['title'])
+        if ((translation.language == "es" and translation.is_reliable) or any(c in listing['title'] for c in ['ñ', 'é', 'á', 'ó'])):
+            listing['score'] = -50
+        
         # Cheap
-        price = int(listing['currentPrice'][1:].replace(',', ''))
+        price = float(listing['currentPrice'][1:].replace(',', ''))
         if (price == 0 and "$" in listing['description']):
             price_list = re.findall(r'\$(\d+)', listing['description'])
             if (len(price_list) != 0):
@@ -85,7 +93,6 @@ if __name__ == "__main__":
     
     # STEP 1 - Get listings
     facebook_marketplace = Marketplace(LATITUDE, LONGITUDE)
-
     
     for category in CATEGORIES:
         print("Checking Facebook Marketplace listings for query: " + category)

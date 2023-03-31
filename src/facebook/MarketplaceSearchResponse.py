@@ -20,8 +20,9 @@ class MarketplaceSearchResponse:
         self.listings = []
         try:
             data = response['data']['marketplace_search']['feed_units']['edges']
-        except KeyError as ke:
-            raise ValueError("ERROR: Invalid response from get_listings. Please confirm your latitude and longitude are correct and your search query is spelled correctly. ", ke)
+        except KeyError:
+            print(response)
+            raise ValueError("ERROR: " + response['errors']['message'])
         
         for data_obj in data:
             node = data_obj['node']

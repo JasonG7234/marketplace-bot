@@ -21,7 +21,7 @@ class Marketplace:
             (dictionary of name, latitude, longitude)
         '''
         
-        DOC_ID = "5585904654783609" # Honestly have no idea what these do, don't ask
+        DOC_ID = "6013160038790754" # Honestly have no idea what these do, don't ask
         
         payload = {
             "variables": """{"params": {"caller": "MARKETPLACE", "page_category": ["CITY", "SUBCITY", "NEIGHBORHOOD","POSTAL_CODE"], "query": "%s"}}""" % (location_query),
@@ -49,12 +49,29 @@ class Marketplace:
         if (debug_mode):
             print("Getting listings for query " + search_query)
             
-        DOC_ID = "5851968321514267" # Honestly have no idea what these do, don't ask
+        DOC_ID = "7111939778879383" # Honestly have no idea what these do, don't ask
 
         payload = {
             "variables": self.get_search_variables(search_query),
             "doc_id": DOC_ID,
-            "__csr": "gaI-ynf4Hb7Hiv4Ofjlvi23i2ArWlQykG5H8ylkAzcwwBRlROnpG-GB-AZqijQGuVCycKiHKFbKFWHzlhFaAmvKpCHLiXGECipamVXCUKHigXG-GFy68V9AqVkU-KiqVpK4GUjBGcgixWeDBWyFUizUoyqzFUjzFVbxCrxK3GEa9U-axGbyUSq5rgW58pKiaAxifAKfGewhoKu257yoO442a9wMyUc8nz8bopwOzaxC2KE7u2C2jDwEwKU4y3m3y3CEnwXwBxe2a1OwwwgUy4Fk32220nC05jE16U08EU1fo0dIo4S00HuU0rqw7CK0ehx6m04BE0gFwho5a02lMwiwcKro3Ew9-04k83Uw0LAw4pIB0kU1lU0SR0fu0iZ07vx20hW0dMw27E8o18Ee8"
+            "routing_namespace": "fb_comet",
+            "__user": "0",
+            "__a": "1",
+            "__dyn": "7xeUmwlE7ibwKBWo2vwAxu13wvoKewSwMwNw9G2S0im3y4o0B-q1ew65xO0FE2awt81sbzoaEd82ly87e2l0Fwqo31wnEfo5m1mxe6E7e58jwGzEao4236222SUbElxm0zK5o4q0GpovU1aUbodEGdwko2QwbS1bw",
+            "__req": "y",
+            "__hs": "19072.HYP%3Acomet_loggedout_pkg.2.0.0.0.",
+            "dpr": "1",
+            "__ccg": "EXCELLENT",
+            "__rev": "1005218752",
+            "__s": "v7uzhb%3Awrp5dt%3Ar9ja1q",
+            "__hsi": "7077666656081570639-0",
+            "__comet_req": "1",
+            "lsd": "AVp4CUdbFLA",
+            "jazoest": "2876",
+            "__spin_r": "1005218752",
+            "__spin_b": "trunk",
+            "__spin_t": "1647897683",
+            "__csr": "hIIg-ySHYAR9qGGhml9HQqivGAuypWgF7CBl7Gl6KFonLgK8G9KayGUPJ5zAFQ79oCqfyoO5oiVVVVV4qVayorG4U4m4EsxKaxr-6polxF7UC8z9E88981jKU0mUw1SS0sOE099y00V7w0Czw0nPU0G-0zeh4ACwj86quqp2pe09UDypk5UB0by0E89o0swg5W2l2E27w2To0DC4E0i9w1h96wFw_w0yQxm9wiZm1JGm9giOwcm059U0bZ81do1l81cEmw1CWawioLwXCwfi"
         }
         response = utils.post_request(payload)
         if (debug_mode):
