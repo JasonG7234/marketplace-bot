@@ -27,13 +27,16 @@ def score_listings(listings):
         
         # Cheap
         price = float(listing['currentPrice'][1:].replace(',', ''))
-        if (price == 0 and "$" in listing['description']):
-            price_list = re.findall(r'\$(\d+)', listing['description'])
+        if (price <= 1):
+            price_text = ""
+            if ("$" in listing['title']): price_text = listing['title']
+            if ("$" in listing['description']): price_text = listing['description']
+            price_list = re.findall(r'\$(\d+)', price_text)
             if (len(price_list) != 0):
                 price_list_int = list(map(int, price_list))
                 price = sum(price_list_int) / len(price_list_int)
                 listing['price'] = price
-        listing['score'] += (250 - price)/25
+        listing['score'] += (250 - price)/20
 
         # Recent
         if (isinstance(listing['timestamp'], datetime)):
@@ -46,13 +49,13 @@ def score_listings(listings):
         
         # Score differently for different categories
         category_dict = {
-            "furniture" : 15,
+            "furniture" : 10,
             "rug" : 10,
-            "couch" : 8,
-            "table" : 8,
-            "homegoods" : 6,
+            "couch" : 10,
+            "table" : 10,
+            "homegoods" : 10,
             "tv" : 5,
-            "bicycle" : 5,
+            "bicycle" : 6,
             "free" : -2,
             "plants" : -1
         }
@@ -61,10 +64,11 @@ def score_listings(listings):
         
         # Good quality
         condition_dict = {
-            "New" : 5,
-            "Used - like new" : 3,
-            "Used - fair" : -3
+            "New" : 3,
+            "Used - like new" : 2,
+            "Used - fair" : 1
         }
+    
         listing['score'] += condition_dict.get(listing['condition'], 0)
         
         # Location
@@ -86,7 +90,7 @@ def populate_listings(listings, output=True):
             outfile.write(']}')
     
     return listings
-
+    
 if __name__ == "__main__":
     
     listings = []
@@ -111,3 +115,10 @@ if __name__ == "__main__":
     
     # STEP 3 - Send email of top 10 listings
     gmail.send_email_old(listings[:10])
+    
+    # or ... 
+    # for listing in listings[:10]:
+    #     print(listing['title'])
+    #     print(listing['description'])
+    #     print("https://www.facebook.com/marketplace/item/" + listing['id'])
+    #     print("========================================================")

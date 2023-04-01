@@ -81,7 +81,7 @@ class Marketplace:
     def get_search_variables(self, query):
             
             return """{
-                "count" : 15,
+                "count" : 20,
                 "params" : {
                     "bqf" : {
                         "callsite" : "COMMERCE_MKTPLACE_WWW",
