@@ -12,7 +12,7 @@ from gmail import gmail
 LATITUDE = "40.4016"
 LONGITUDE = "-74.3063"
 NOW = datetime.now()
-CATEGORIES = ["bicycle", "rug", "couch", "furniture", "free", "table", "computer", "tv", "homegoods"]
+CATEGORIES = ["bicycle", "rug", "free", "table", "eames", "homegoods", "furniture", "tv", "couch"]
 
 def score_listings(listings):
         
@@ -49,6 +49,7 @@ def score_listings(listings):
         
         # Score differently for different categories
         category_dict = {
+            "eames": 35,
             "furniture" : 10,
             "rug" : 10,
             "couch" : 10,
@@ -108,17 +109,18 @@ if __name__ == "__main__":
     # data = json.load(f)
     # for item in data['listings']:
     #     listings.append(item)
-    
-    #STEP 2 - Score all listings
-    listings = score_listings(listings)
-    listings = populate_listings(listings)
-    
-    # STEP 3 - Send email of top 10 listings
-    gmail.send_email_old(listings[:10])
-    
-    # or ... 
-    # for listing in listings[:10]:
-    #     print(listing['title'])
-    #     print(listing['description'])
-    #     print("https://www.facebook.com/marketplace/item/" + listing['id'])
-    #     print("========================================================")
+        
+    if (len(listings) > 0):
+        #STEP 2 - Score all listings
+        listings = score_listings(listings)
+        listings = populate_listings(listings)
+        
+        # STEP 3 - Send email of top 10 listings
+        gmail.send_email_old(listings[:10])
+        
+        # or ... 
+        # for listing in listings[:10]:
+        #     print(listing['title'])
+        #     print(listing['description'])
+        #     print("https://www.facebook.com/marketplace/item/" + listing['id'])
+        #     print("========================================================")

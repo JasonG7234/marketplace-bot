@@ -45,7 +45,10 @@ class MarketplaceSearchResponse:
                 
                 if (debug_mode):
                     print("Getting listing details for listing id " + listing_id)
-                listing_details = self.get_listing_details(listing_id)
+                try:
+                    listing_details = self.get_listing_details(listing_id)
+                except KeyError:
+                    break
                 
                 listing = {
                     'id' : listing_id,
